@@ -74,14 +74,20 @@ class Prefix:
                 break
             elif values['addedKey'] != '':
                 self.taken[values['addedKey']] = values['keyInput']
+                infile = open('khayaKeys.txt', 'a')
+                infile.write(values['addedKey'] + ":" + values['keyInput'] + '\n')
+                infile.close()
                 window['output'].update('{} was added to your list'.format(values['addedKey']))
 
         window.close()
 
+    def loadKeys(self, key, output):
+        self.taken[key] = output
+
     def viewkeys(self):
         layout = []
         for i in self.taken:
-            layout.append([Sg.Text('Prefix: ' + i + ' ' + self.taken[i])])
+            layout.append([Sg.Text('Key: ' + i + '\nMessage: ' + self.taken[i])])
         layout.append([Sg.Button('Close')])
         window = Sg.Window("View Keys", layout)
 
@@ -139,6 +145,9 @@ class Prefix:
                 break
             elif values['-INPUT-'] != '':
                 self.prefix = values['-INPUT-']
+                infile = open('khayaKeys.txt', 'w')
+                infile.write('Prefix: ' + values['-INPUT-'] + '\n')
+                infile.close()
                 break
             else:
                 window['-OUTPUT-'].update('Please enter a prefix')
@@ -150,7 +159,17 @@ class Prefix:
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sk = Prefix()
-    sk.create_sk()
-    if sk.get_prefix() != '':
+    try:
+        infile = open('khayaKeys.txt', 'r+')
+        ofile = infile.readline()
+        sk = Prefix(ofile[8:len(ofile)])
+        for line in infile.readlines():
+            if len(line) >= 3:
+                key_val = line.split(':')
+                sk.loadKeys(key_val[0], key_val[1][0:len(key_val[1])-1])
         sk.main_window()
+    except FileNotFoundError:
+        sk = Prefix()
+        sk.create_sk()
+        if sk.get_prefix() != '':
+            sk.main_window()
